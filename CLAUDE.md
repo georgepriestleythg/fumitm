@@ -40,12 +40,11 @@ The project has a pytest-based test suite in `test_suite/`:
 ```bash
 # Run all tests
 cd test_suite
-source .venv/bin/activate  # or create with: uv venv && uv pip install -r requirements.txt
-python -m pytest test_fuwarp_integration.py -v
+uvx pytest test_fuwarp_integration.py -v
 
 # Run specific test classes
-python -m pytest test_fuwarp_integration.py::TestStatusFunctionContracts -v
-python -m pytest test_fuwarp_integration.py::TestCodeQuality -v
+uvx pytest test_fuwarp_integration.py::TestStatusFunctionContracts -v
+uvx pytest test_fuwarp_integration.py::TestCodeQuality -v
 ```
 
 Key test categories:
