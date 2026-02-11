@@ -157,7 +157,7 @@ SHELL_MODIFIED = False
 CERT_FINGERPRINT = ""  # Cache for certificate fingerprint
 
 
-class FuwarpWindows:
+class FumitmWindows:
     def __init__(
         self, mode="status", debug=False, selected_tools=None, use_warp_cli=False
     ):
@@ -2513,7 +2513,7 @@ https.get('{test_url}', {{headers: {{'User-Agent': 'Mozilla/5.0'}}}}, (res) => {
         self.print_info("========")
         if has_issues:
             self.print_warn("Some configurations need attention.")
-            self.print_action("Run 'python fuwarp_windows.py --fix' to fix the issues")
+            self.print_action("Run 'python fumitm_windows.py --fix' to fix the issues")
         else:
             self.print_info(
                 "✓ All configured tools are properly set up for Cloudflare WARP"
@@ -2532,7 +2532,7 @@ https.get('{test_url}', {{headers: {{'User-Agent': 'Mozilla/5.0'}}}}, (res) => {
 
             if self.is_debug_mode():
                 self.print_debug(
-                    f"Fuwarp version: {VERSION_INFO['version']} (commit: {VERSION_INFO['commit']})"
+                    f"Fumitm version: {VERSION_INFO['version']} (commit: {VERSION_INFO['commit']})"
                 )
                 self.print_debug(
                     f"Branch: {VERSION_INFO['branch']} | Date: {VERSION_INFO['date']}"
@@ -2643,11 +2643,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""
 Examples:
-  python fuwarp_windows.py                    # Check status of all tools
-  python fuwarp_windows.py --fix              # Fix all detected issues
-  python fuwarp_windows.py --tools node       # Check only Node.js
-  python fuwarp_windows.py --fix --tools python,git  # Fix Python and Git only
-  python fuwarp_windows.py --list-tools       # Show available tools
+  python fumitm_windows.py                    # Check status of all tools
+  python fumitm_windows.py --fix              # Fix all detected issues
+  python fumitm_windows.py --tools node       # Check only Node.js
+  python fumitm_windows.py --fix --tools python,git  # Fix Python and Git only
+  python fumitm_windows.py --list-tools       # Show available tools
 
 {version_str} | Default: status check only (use --fix to make changes)
         """,
@@ -2701,14 +2701,14 @@ Examples:
     # Handle --list-tools first
     if args.list_tools:
         # Create a temporary instance just to access the registry
-        temp_fuwarp = FuwarpWindows()
+        temp_fumitm = FumitmWindows()
         print("Available tools:")
-        for tool_key, tool_info in temp_fuwarp.tools_registry.items():
+        for tool_key, tool_info in temp_fumitm.tools_registry.items():
             tags_str = ", ".join(tool_info["tags"])
             print(f"  {tool_key:<10} - {tool_info['name']:<25} Tags: {tags_str}")
-        print("\nExamples: python fuwarp_windows.py --fix --tools node,python")
+        print("\nExamples: python fumitm_windows.py --fix --tools node,python")
         print(
-            "          python fuwarp_windows.py --fix --tools node-npm --tools podman"
+            "          python fumitm_windows.py --fix --tools node-npm --tools podman"
         )
         sys.exit(0)
 
@@ -2722,14 +2722,14 @@ Examples:
     # Determine mode
     mode = "install" if args.fix else "status"
 
-    # Create and run fuwarp instance
-    fuwarp = FuwarpWindows(
+    # Create and run fumitm instance
+    fumitm = FumitmWindows(
         mode=mode,
         debug=args.debug,
         selected_tools=selected_tools,
         use_warp_cli=args.use_warp_cli,
     )
-    exit_code = fuwarp.main()
+    exit_code = fumitm.main()
     sys.exit(exit_code)
 
 

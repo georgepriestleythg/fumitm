@@ -1,6 +1,6 @@
-# fuwarp (Cloudflare WARP Certificate Fixer Upper)
+# fumitm (MITM Certificate .. Fixer Upper)
 
-Script to automatically verify and fix Cloudflare Warp Gateway TLS distrust issues
+Script to automatically verify and fix MITM TLS distrust issues commonly afflicting corporate device users who are subject to traffic inspection via agents such as Cloudflare Warp, Netskope or ZScaler.
 
 ## Usage
 
@@ -8,80 +8,57 @@ Script to automatically verify and fix Cloudflare Warp Gateway TLS distrust issu
 
 ```bash
 # Download the script
-curl -LsSf https://raw.githubusercontent.com/aberoham/fuwarp/main/fuwarp.py -o fuwarp.py
-chmod +x ./fuwarp.py
+curl -LsSf https://raw.githubusercontent.com/aberoham/fumitm/main/fumitm.py -o fumitm.py
+chmod +x ./fumitm.py
 
 # Check status (no changes made)
-./fuwarp.py
+./fumitm.py
 
 # Apply fixes
-./fuwarp.py --fix
+./fumitm.py --fix
 
 # Run with detailed debug output (useful for troubleshooting)
-./fuwarp.py --debug
+./fumitm.py --debug
 ```
 
 ### Windows
 
 ```powershell
 # Download the Windows-specific script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aberoham/fuwarp/main/fuwarp_windows.py" -OutFile "fuwarp_windows.py"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/aberoham/fumitm/main/fumitm_windows.py" -OutFile "fumitm_windows.py"
 
 # Check status (no changes made)
-python fuwarp_windows.py
+python fumitm_windows.py
 
 # Apply fixes to all supported tools
-python fuwarp_windows.py --fix
-
-# Fix only specific tools (can specify multiple)
-python fuwarp_windows.py --fix --tools node --tools python
-python fuwarp_windows.py --fix --tools node-npm,gcloud
-
-# List all available tools and their tags
-python fuwarp_windows.py --list-tools
-
-# Run with detailed debug/verbose output (useful for troubleshooting)
-python fuwarp_windows.py --debug
-python fuwarp_windows.py --verbose
-
-# Show help and all available commands
-python fuwarp_windows.py --help
+python fumitm_windows.py --fix
 ```
 
-#### Windows Command Line Options
+## FU MITM Rational
 
-- `-h, --help` - Show help message and exit
-- `--fix` - Actually make changes (default is status check only)
-- `--tools, --tool TOOLS` - Specific tools to check/fix (can be specified multiple times)
-  - Examples: `--tools node --tools python` or `--tools node,gcloud`
-- `--list-tools` - List all available tools and their tags
-- `--debug, --verbose` - Show detailed debug information
+When your organization runs a man-in-the-middle (MITM) gateway with TLS inspection enabled, the gateway intercepts and records virtually all HTTPS traffic for policy enforcement and security auditing. MITM gateways achieves this introspection by presenting their own root certificate to your TLS clients -- essentially performing sanctioned wiretapping on your TLS (aka SSL) connections.
 
-## FU Warp Rational
+Typically, MacOS and Windows themselves will automatically trust your MITM's certificate through system keychains. Most third-party development tools completely ignore these system certificates. Each tool maintains its own certificate bundle or looks for specific environment variables. This fragmentation creates endless annoying "certificate verify failed" errors across your toolchain whenever your MITM gateway's inspection is turned on.
 
-When your organization runs Cloudflare WARP Gateway with TLS inspection enabled, the gateway intercepts and records virtually all HTTPS traffic for policy enforcement and security auditing. WARP's Gateway achieves this introspection by presenting its own root certificate to your TLS clients -- essentially performing a sanctioned man-in-the-middle (MITM) attack on your TLS (aka SSL) connections.
+One particularly annoying detail is that simply pointing tools to your organization's MITM gateway certificate by itself rarely works. You often need to append the custom MITM CA to an existing bundle of public CAs, which quickly becomes a brittle process that needs repeating for each tool. 
 
-Typically, MacOS and Windows themselves will automatically trust WARP's certificate through system keychains. Most third-party development tools completely ignore these system certificates. Each tool maintains its own certificate bundle or looks for specific environment variables. This fragmentation creates endless annoying "certificate verify failed" errors across your toolchain whenever Warp Gateway's inspection is turned on.
+FU MITM!
 
-One particularly annoying detail is that simply pointing tools to your organization's WARP Gateway certificate by itself rarely works. You often need to append the custom WARP CA to an existing bundle of public CAs, which quickly becomes a brittle process that needs repeating for each tool. 
+## Don't Disable Your MITM
 
-FU Warp!
+Whilst the quick temporary workaround might be to toggle your MITM gateway OFF, this is incredibly distressing to any nearby Information Security professionals who will one day need to forensically examine dodgy dependencies or MCPs that have slipped onto your laptop.
 
-## Don't Disable Warp
-
-Whilst the quick temporary workaround might be to toggle Cloudflare Warp OFF, this is incredibly distressing to any nearby Information Security professionals who will one day need to forensically examine dodgy dependencies or MCPs that have slipped onto your laptop.
-
-The act of toggling Warp off also seriously hints that you have no clue what you're doing, as understanding TLS certificate-based trust is a critical concept underpinning modern vibe'n.
+The act of toggling your MITM off also seriously hints that you have no clue what you're doing, as understanding TLS certificate-based trust is a critical concept underpinning modern vibe'n.
 
 ## Requirements
 
 ### General
-- Cloudflare WARP must be installed and connected
-- `warp-cli` command must be available
+- Cloudflare WARP or Netskope Client must be installed and connected
+- `warp-cli` or `nsdiag` command must be available 
 - Python 3 (macOS, Windows/WSL)
 
 ### Windows-Specific
-- `warp-cli.exe` command must be available (typically installed with WARP)
+- `warp-cli.exe` or `nsdiag.exe` command must be available 
 - Administrator privileges may be required for some fixes
 
 ## Contribute
@@ -119,7 +96,7 @@ Something amiss or not quite right? Please post the full output of a run to an i
 
 #### Windows-Specific Notes
 
-The Windows version (`fuwarp_windows.py`) includes Windows-specific functionality:
+The Windows version (`fumitm_windows.py`) includes Windows-specific functionality:
 
 - Uses Windows Registry to locate certificates and configuration
 - Handles Windows paths and file permissions
@@ -128,9 +105,7 @@ The Windows version (`fuwarp_windows.py`) includes Windows-specific functionalit
 
 ### VS Code Devcontainers / WSL
 
-Fuwarp should auto-detect VS Code devcontainers and WSL environments where `warp-cli` is only available on the underlying host. Within these environments, fuwarp will guide the user where to obtain their Cloudflare cert and will skip slow verification tests.
-
-Fuwarp should auto-detect WSL environments where `warp-cli` is only available on the underlying Windows host. Within WSL, fuwarp will guide the user where to obtain their Cloudflare cert and will skip slow verification tests.
+Fumitm should auto-detect VS Code devcontainers and WSL environments where `warp-cli`/`nsdiag` is only available on the underlying host. Within these environments, fumitm will guide the user where to obtain their MITM cert and will skip slow verification tests.
 
 ## Installation Alternative
 
@@ -139,29 +114,29 @@ You can also run the script directly from the repository:
 ### Linux/macOS
 ```bash
 # Clone the repository
-git clone https://github.com/aberoham/fuwarp.git
-cd fuwarp
+git clone https://github.com/aberoham/fumitm.git
+cd fumitm
 
 # Run the script
-./fuwarp.py --fix
+./fumitm.py --fix
 ```
 
 ### Windows
 ```powershell
 # Clone the repository
-git clone https://github.com/aberoham/fuwarp.git
-cd fuwarp
+git clone https://github.com/aberoham/fumitm.git
+cd fumitm
 
 # Run the Windows-specific script
-python fuwarp_windows.py --fix
+python fumitm_windows.py --fix
 ```
 
 ## Troubleshooting
 
 If you encounter issues:
 
-1. Ensure WARP is connected: `warp-cli status`
-2. Run with debug output: `./fuwarp.py --debug` (Linux/macOS) or `python fuwarp_windows.py --debug` (Windows)
+1. Ensure your MITM is connected: `warp-cli status`, `nsdiag -f`
+2. Run with debug output: `./fumitm.py --debug` (Linux/macOS) or `python fumitm_windows.py --debug` (Windows)
 3. Check that Python 3 is properly installed and in your PATH
 4. Verify you have appropriate permissions for the tools you're trying to fix
 
